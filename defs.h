@@ -1,16 +1,23 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <map>
+#include <string>
+
 #define NUMBER_OF_HOUSES_PER_SIDE 6
 #define NUMBER_OF_PLAYERS 2
 #define STARTING_SEEDS_PER_HOUSE 4
 static constexpr int ALLOW_CAPTURES = 1;
+static constexpr int ALLOW_RELAY_SOWING = 0;
+static constexpr int ALLOW_MULTIPLE_LAPS = 1;
 
 static constexpr int NUMBER_OF_TOTAL_HOUSES = (2 * NUMBER_OF_HOUSES_PER_SIDE);
 static constexpr int NUMBER_OF_TOTAL_HOLES = (NUMBER_OF_TOTAL_HOUSES + NUMBER_OF_PLAYERS);
 
-
 static constexpr int PLAYER_TO_STORE_INDEX[2] = { 6, 13 };
+static std::map<int, std::string> HOLE_INDEX_TO_STRING = {
+	{0, "A1"}, {1, "A2"}, {2, "A3"}, {3, "A4"}, {4, "A5"}, {5, "A6"}, {6, "SA"}, {7, "B1"}, {8, "B2"}, {9, "B3"}, {10, "B4"}, {11, "B5"}, {12, "B6"}, {13, "SB"}
+};
 
 
 /*
@@ -41,6 +48,7 @@ constexpr int get_hole_side(int hole) {
 struct GAMESTATE {
 	unsigned int board[NUMBER_OF_TOTAL_HOLES] = {};
 	int current_player = PLAYER_A;
+	int game_result = 0;
 };
 
 

@@ -83,6 +83,18 @@ void do_capture(GAMESTATE* gs, int hole_index) {
 
 
 bool sowing(GAMESTATE*gs, int hole_index) {
+	// verify
+	int starter;
+	if (gs->current_player == PLAYER_A) {
+		starter = 0;
+	}
+	else {
+		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	}
+	if (hole_index < starter or hole_index > (starter + 5)) {
+		throw (505);
+	}
+
 	int seed_count = gs->board[hole_index];
 	gs->board[hole_index] = 0;
 	while (seed_count > 0) {
@@ -101,10 +113,10 @@ bool sowing(GAMESTATE*gs, int hole_index) {
 	}
 
 
-	if (hole_index = PLAYER_TO_STORE_INDEX[gs->current_player]) {
+	if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
 		return true;
 	}
-	else if (ALLOW_CAPTURES) {
+	if (ALLOW_CAPTURES) {
 		if (gs->board[hole_index] == 1) {
 			do_capture(gs, hole_index);
 		}
@@ -113,15 +125,48 @@ bool sowing(GAMESTATE*gs, int hole_index) {
 	return false;
 }
 
-int game_cycle(GAMESTATE*gs) {
-	return 0;
+int game_cycle(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_b)(GAMESTATE*gs), bool print_output = false) {
+	while (not gamestate->game_result) {
+		if (print_output) {
+			print_board(gamestate);
+		}
+		int hole_selected = -1;
+		switch (gamestate->current_player) {
+		case PLAYER_A:
+			hole_selected = player_a(gamestate);
+			break;
+		case PLAYER_B:
+			hole_selected = player_b(gamestate);
+			break;
+		}
+
+		bool multiple_laps = false;
+		try {
+			multiple_laps = sowing(gamestate, hole_selected);
+		}
+		catch (...) {
+			cout << "MOVE ERROR!\n";
+			cout << "Tried move: " << HOLE_INDEX_TO_STRING[hole_selected] << " in position. \n";
+			print_board(gamestate);
+			return 2;
+		}
+		if (print_output) {
+			cout << "Hole selected: " << HOLE_INDEX_TO_STRING[hole_selected] << ".\n";
+		}
+
+		if (not multiple_laps) {
+			gamestate->current_player ^= 1;
+		}
+		continue;
+	}
+	return true;
 }
 
 
 int main() {
 	GAMESTATE new_game;
 	start_game(&new_game);
-	print_board(&new_game);
+
 
 	return 0;
 }
