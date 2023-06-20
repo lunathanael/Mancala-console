@@ -19,6 +19,9 @@ static std::map<int, std::string> HOLE_INDEX_TO_STRING = {
 	{0, "A1"}, {1, "A2"}, {2, "A3"}, {3, "A4"}, {4, "A5"}, {5, "A6"}, {6, "SA"}, {7, "B1"}, {8, "B2"}, {9, "B3"}, {10, "B4"}, {11, "B5"}, {12, "B6"}, {13, "SB"}
 };
 
+static std::map<std::string, int> STRING_TO_HOLE_INDEX = {
+	{"A1", 0}, {"A2", 1}, {"A3", 2}, {"A4", 3}, {"A5", 4}, {"A6", 5}, {"SA", 6}, {"B1", 7}, {"B2", 8}, {"B3", 9}, {"B4", 10}, {"B5", 11}, {"B6", 12}, {"SB", 13}
+};
 
 /*
 STORE (B)
@@ -33,6 +36,9 @@ STORE (B)
 enum PLAYERS{ 
 	PLAYER_A, PLAYER_B
 };
+
+
+std::string PLAYER_INDEX_TO_STRING[2] = { "Player A", "Player B" };
 
 
 enum HOLE_REFERENCE {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "defs.h"
 #include <algorithm>
+#include <string>
 
 using namespace std;
 
@@ -48,7 +49,43 @@ void print_board(GAMESTATE* gamestate) {
 	}
 	cout << "|   |" << endl;
 
+	cout << "+---+--+--+--+--+--+--+---+\n" << endl;
+
+	return;
+}
+
+void print_help() {
+	int current_hole_index;
+
+
 	cout << "+---+--+--+--+--+--+--+---+" << endl;
+
+	// Print player B side
+	cout << "|   ";
+	current_hole_index = PLAYER_TO_STORE_INDEX[PLAYER_B] - 1;
+	for (; current_hole_index > PLAYER_TO_STORE_INDEX[PLAYER_A]; --current_hole_index) {
+		cout << "|";
+		cout << HOLE_INDEX_TO_STRING[current_hole_index];
+	}
+	cout << "|   |" << endl;
+
+	// Print Stores
+	cout << "|";
+	cout << HOLE_INDEX_TO_STRING[PLAYER_TO_STORE_INDEX[PLAYER_B]];
+	cout << " +--+--+--+--+--+--+ ";
+	cout << HOLE_INDEX_TO_STRING[PLAYER_TO_STORE_INDEX[PLAYER_A]];
+	cout << "|" << endl;
+
+	// Print player A side
+	cout << "|   ";
+	current_hole_index = 0;
+	for (; current_hole_index < PLAYER_TO_STORE_INDEX[PLAYER_A]; ++current_hole_index) {
+		cout << "|";
+		cout << HOLE_INDEX_TO_STRING[current_hole_index];
+	}
+	cout << "|   |" << endl;
+
+	cout << "+---+--+--+--+--+--+--+---+\n" << endl;
 
 	return;
 }
@@ -125,7 +162,32 @@ bool sowing(GAMESTATE*gs, int hole_index) {
 	return false;
 }
 
-int game_cycle(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_b)(GAMESTATE*gs), bool print_output = false) {
+int human_player(GAMESTATE* gs) {
+	cout << "Player " << PLAYER_INDEX_TO_STRING[gs->current_player] << "'s turn.\n";
+	input_loop:
+	cout << "Print the location of the hole to move: ";
+	int hole_index = -1;
+	string input;
+	cin >> input;
+	hole_index = STRING_TO_HOLE_INDEX[input];
+	cout << endl;
+
+	int starter;
+	if (gs->current_player == PLAYER_A) {
+		starter = 0;
+	}
+	else {
+		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	}
+	if (hole_index < starter or hole_index >(starter + 5)) {
+		cout << "Invalid hole!\n";
+		goto input_loop;
+	}
+
+	return hole_index;
+}
+
+int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_b)(GAMESTATE*gs), bool print_output = false) {
 	while (not gamestate->game_result) {
 		if (print_output) {
 			print_board(gamestate);
@@ -154,7 +216,12 @@ int game_cycle(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player
 			cout << "Hole selected: " << HOLE_INDEX_TO_STRING[hole_selected] << ".\n";
 		}
 
-		if (not multiple_laps) {
+		if (ALLOW_MULTIPLE_LAPS) {
+			if (multiple_laps) {
+				continue;
+			}
+		}
+		else {
 			gamestate->current_player ^= 1;
 		}
 		continue;
@@ -166,7 +233,8 @@ int game_cycle(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player
 int main() {
 	GAMESTATE new_game;
 	start_game(&new_game);
-
+	print_help();
+	game_loop(&new_game, human_player, human_player, true);
 
 	return 0;
 }
