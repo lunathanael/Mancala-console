@@ -9,6 +9,7 @@
 #define NUMBER_OF_PLAYERS 2
 #define STARTING_SEEDS_PER_HOUSE 4
 static constexpr int ALLOW_CAPTURES = 1;
+static constexpr int CAPTURE_BOTH = 1;
 static constexpr int ALLOW_RELAY_SOWING = 0;
 static constexpr int ALLOW_MULTIPLE_LAPS = 1;
 

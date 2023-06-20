@@ -83,7 +83,7 @@ bool is_valid_move(GAMESTATE* gamestate, int hole_index) {
 	else {
 		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
 	}
-	if (hole_index < starter or hole_index >(starter + 5)) {
+	if (hole_index < starter or hole_index > (starter + 5)) {
 		return false;
 	}
 
@@ -95,8 +95,16 @@ bool is_valid_move(GAMESTATE* gamestate, int hole_index) {
 
 
 int do_capture(GAMESTATE* gs, int hole_index) {
+	if (is_valid_move(gs, hole_index) == false) {
+		gs->current_player ^= 1;
+		return 0;
+	}
 	int opposite_hole_index = ((2 * PLAYER_TO_STORE_INDEX[PLAYER_A]) - hole_index);
 	int seed_count = gs->board[opposite_hole_index];
+	if (CAPTURE_BOTH and (seed_count != 0) ) {
+		++seed_count;
+		--gs->board[hole_index];
+	}
 	gs->board[PLAYER_TO_STORE_INDEX[gs->current_player]] += seed_count;
 	gs->board[opposite_hole_index] = 0;
 
@@ -136,15 +144,20 @@ int sowing(GAMESTATE* gs, int hole_index, bool verify) {
 		++gs->board[hole_index];
 		--seed_count;
 	}
-
-	if (ALLOW_MULTIPLE_LAPS) {
-		if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
+	if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
+		if (ALLOW_MULTIPLE_LAPS) {
 			return -1;
 		}
 	}
-	if (ALLOW_CAPTURES) {
-		if (gs->board[hole_index] == 1) {
+	else if (gs->board[hole_index] == 1) {
+		if (ALLOW_CAPTURES) {
 			return do_capture(gs, hole_index);
+		}
+	}
+	else {
+		if (ALLOW_RELAY_SOWING) {
+			sowing(gs, hole_index, false);
+			return -2;
 		}
 	}
 
@@ -194,7 +207,7 @@ void clear_side(GAMESTATE* gamestate, int side_to_clear) {
 		cumm_seeds += gamestate->board[hole_index];
 		gamestate->board[hole_index] = 0;
 	}
-	gamestate->board[PLAYER_TO_STORE_INDEX[side_to_clear ^ 1]] += cumm_seeds;
+	gamestate->board[PLAYER_TO_STORE_INDEX[side_to_clear]] += cumm_seeds;
 	return;
 }
 
@@ -216,33 +229,30 @@ void update_game_result(GAMESTATE* gamestate) {
 
 
 bool update_game_over(GAMESTATE* gamestate) {
-	bool game_over[2] = { true, true };
-	for (int hole_index = 0; hole_index < 6; ++hole_index) {
-		if (gamestate->board[hole_index] != 0) {
-			game_over[0] = false;
-		}
-	}
-	for (int hole_index = 7; hole_index < 13; ++hole_index) {
-		if (gamestate->board[hole_index] != 0) {
-			game_over[1] = false;
-		}
-	}
 
-	if (game_over[0] or game_over[1]) {
-		if (not (game_over[0] and game_over[1])) {
-			if (game_over[0]) {
-				clear_side(gamestate, PLAYER_B);
-			}
-			else {
-				clear_side(gamestate, PLAYER_A);
-			}
+	int added_scores[2] = { 0, 0 };
+	for (int hole_index = 0; hole_index < 6; ++hole_index) {
+		added_scores[PLAYER_A] += gamestate->board[A_HOLE_RANGE[hole_index]];
+		added_scores[PLAYER_B] += gamestate->board[B_HOLE_RANGE[hole_index]];
+	}
+	if (added_scores[PLAYER_A] != added_scores[PLAYER_B]) {
+		if (added_scores[PLAYER_A] == 0) {
+			clear_side(gamestate, PLAYER_B);
+			update_game_result(gamestate);
+			return true;
 		}
+		if (added_scores[PLAYER_B] == 0) {
+			clear_side(gamestate, PLAYER_A);
+			update_game_result(gamestate);
+			return true;
+		}
+		return false;
+	}
+	else if (added_scores[PLAYER_A] == 0) {
 		update_game_result(gamestate);
 		return true;
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 
@@ -250,6 +260,9 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*
 	while (gamestate->game_result == -1) {
 		if (print_output) {
 			print_board(gamestate);
+		}
+		if (update_game_over(gamestate)) {
+			break;
 		}
 		int hole_selected = -1;
 		switch (gamestate->current_player) {
@@ -275,9 +288,6 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*
 			cout << "Hole selected: " << HOLE_INDEX_TO_STRING[hole_selected] << ".\n";
 		}
 
-		if (update_game_over(gamestate)) {
-			break;
-		}
 		continue;
 	}
 

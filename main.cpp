@@ -98,18 +98,26 @@ int main() {
 	time_seed = time(NULL);
 	srand(time_seed);
 
+	print_help();
 	//benchmark(alpha_beta_player, random_player, 1'000, 10, 1);
 	GAMESTATE gamestate;
 	start_game(&gamestate);
 
-	game_loop(&gamestate, alpha_beta_player, alpha_beta_player, true, 10, 1);
-
-	return 0;
-	int depth = 1;
-	while (1) {
-		cout << alpha_beta_player(&gamestate, depth++) << endl;
+	int input;
+	cin >> input;
+	if (input == 1) {
+		game_loop(&gamestate, alpha_beta_player, human_player, true, 16, 1);
+	}
+	else {
+		game_loop(&gamestate, human_player, alpha_beta_player, true, 16, 16);
 	}
 
-	game_loop(&gamestate, alpha_beta_player, random_player, true, 6);
+
+	//int depth = 1;
+	//while (1) {
+	//	cout << "Depth: " << depth << "Move index: " << alpha_beta_player(&gamestate, depth++) << endl;
+	//}
+
+
 	return 0;
 }

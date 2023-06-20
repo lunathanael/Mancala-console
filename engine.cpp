@@ -48,44 +48,54 @@ int human_player(GAMESTATE* gs, int) {
 	cout << "Player " << PLAYER_INDEX_TO_STRING[gs->current_player] << "'s turn.\n";
 input_loop:
 	cout << "Print the location of the hole to move: ";
-	int hole_index = -1;
-	string input;
+	int input = -1;
 	cin >> input;
 	cout << endl;
 
-	if (STRING_TO_HOLE_INDEX.find(input) == STRING_TO_HOLE_INDEX.end()) {
+	if (gs->current_player == PLAYER_A) {
+		--input;
+	}
+	else {
+		input += 6;
+	}
+	//if (STRING_TO_HOLE_INDEX.find(input) == STRING_TO_HOLE_INDEX.end()) {
+	//	cout << "Invalid input!\n";
+	//	goto input_loop;
+	//}
+	//else {
+	//	hole_index = STRING_TO_HOLE_INDEX[input];
+	//}
+	if (validate_move(gs, input) == false) {
 		cout << "Invalid input!\n";
 		goto input_loop;
 	}
-	else {
-		hole_index = STRING_TO_HOLE_INDEX[input];
-	}
-	if (not validate_move(gs, hole_index)) {
-		cout << "Invalid hole!\n";
-		goto input_loop;
-	}
+	//if (not validate_move(gs, hole_index)) {
+	//	cout << "Invalid hole!\n";
+	//	goto input_loop;
+	//}
 
-	return hole_index;
+	return input;
 }
 
 
 // min max stuff
 
 int add_side(GAMESTATE* gamestate) {
-	int starter;
-	int cumm_seeds = 0;
-	int side_to_clear = (gamestate->current_player ^ 1);
-	if (side_to_clear == PLAYER_A) {
-		starter = 0;
+
+	int added_scores[2];
+	for (int hole_index = 0; hole_index < 6; ++hole_index) {
+		added_scores[PLAYER_A] += gamestate->board[A_HOLE_RANGE[hole_index]];
+		added_scores[PLAYER_B] += gamestate->board[B_HOLE_RANGE[hole_index]];
 	}
-	else {
-		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	if (added_scores[PLAYER_A] != added_scores[PLAYER_B]) {
+		if (added_scores[PLAYER_A] == 0) {
+			return -added_scores[PLAYER_B];
+		}
+		if (added_scores[PLAYER_B] == 0) {
+			return added_scores[PLAYER_A];
+		}
 	}
-	for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
-		cumm_seeds += gamestate->board[hole_index];
-	}
-	gamestate->board[PLAYER_TO_STORE_INDEX[gamestate->current_player]] += cumm_seeds;
-	return cumm_seeds;
+	return 0;
 }
 
 
@@ -94,37 +104,22 @@ int evaluate(GAMESTATE* gs, int added_score=0) {
 	int a_score = gs->board[PLAYER_TO_STORE_INDEX[PLAYER_A]];
 	int b_score = gs->board[PLAYER_TO_STORE_INDEX[PLAYER_B]];
 
-	if (added_score == 0) {
-		int added_scores[2];
-		added_scores[gs->current_player] = add_side(gs);
-		gs->current_player ^= 1;
-		added_scores[gs->current_player] = add_side(gs);
-		gs->current_player ^= 1;
-		if (added_scores[PLAYER_A] != added_scores[PLAYER_B]) {
-			if (added_scores[PLAYER_A] == 0) {
-				a_score += added_scores[PLAYER_B];
-			}
-			if (added_scores[PLAYER_B] == 0) {
-				b_score += added_scores[PLAYER_A];
-			}
+	if (added_score != 0) {
+		if (added_score > 0) {
+			a_score += added_score;
 		}
-	}
-	else if (gs->current_player == PLAYER_A) {
-		a_score += added_score;
-	}
-	else {
-		b_score += added_score;
+		if (added_score < 0) {
+			b_score -= added_score;
+		}
 	}
 
 	if (a_score > (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS)) {
-		return VICTORY_SCORE;
+		a_score += VICTORY_SCORE;
 	}
-	else if (b_score > (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS)) {
-		return -VICTORY_SCORE;
+	if (b_score > (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS)) {
+		b_score += VICTORY_SCORE;
 	}
-	else {
-		return (a_score - b_score);
-	}
+	return (a_score - b_score);
 }
 
 
@@ -225,13 +220,16 @@ int min_max_player(GAMESTATE* given_gs, int depth) {
 
 
 int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
+	int added_seeds = add_side(given_gs);
+	if (added_seeds != 0) {
+		return evaluate(given_gs, added_seeds);
+	}
 	if (depth == 0) {
 		return evaluate(given_gs);
 	}
 
 
 	int best_eval;
-	bool move_found = false;
 	if (given_gs->current_player == PLAYER_A) {
 		best_eval = -INFINITY_SCORE;
 		int starter = 0;
@@ -241,7 +239,6 @@ int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
 			}
 			GAMESTATE gamestate;
 			memcpy(&gamestate, given_gs, sizeof(*given_gs));
-			move_found = true;
 			sowing(&gamestate, hole_index, false);
 			best_eval = max(alpha_beta(&gamestate, depth - 1, alpha, beta), best_eval);
 			//unsow(gs, hole_index, seed_count, move_type);
@@ -261,7 +258,6 @@ int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
 			}
 			GAMESTATE gamestate;
 			memcpy(&gamestate, given_gs, sizeof(*given_gs));
-			move_found = true;
 			sowing(&gamestate, hole_index, false);
 			best_eval = min(alpha_beta(&gamestate, depth - 1, alpha, beta), best_eval);
 			//unsow(&gs, hole_index, seed_count, move_type);
@@ -273,10 +269,6 @@ int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
 		}
 	}
 
-	if (move_found == false) {
-		int added_seeds = add_side(given_gs);
-		return evaluate(given_gs, added_seeds);
-	}
 	return best_eval;
 }
 
