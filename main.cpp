@@ -1,12 +1,13 @@
 #include <iostream>
 #include <string>
+#include <random>
+#include <time.h>
 
 #include "defs.h"
 #include "gamestate.h"
 #include "engine.h"
 
 using namespace std;
-
 
 
 void print_help() {
@@ -46,14 +47,15 @@ void print_help() {
 }
 
 
-
-
-void benchmark_random() {
-	int a_wins = 0, b_wins = 0, ties = 0, total_games = 100'000;
+void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A = -1, int opt_B = -1) {
+	int a_wins = 0, b_wins = 0, ties = 0, total_games = trials;
 	float progress = 0.0;
+
 	int barWidth = 70;
+	int segments = 125;
+	int seg_len = trials / segments;
 	for (int i = 0; i < total_games; ++i) {
-		if (i % 2047 == 0) {
+		if (i % seg_len == 0) {
 			progress = (float)i / (float)total_games;
 			std::cout << "[";
 			int pos = barWidth * progress;
@@ -69,7 +71,7 @@ void benchmark_random() {
 
 		GAMESTATE new_game;
 		start_game(&new_game);
-		game_loop(&new_game, random_player, random_player, false);
+		game_loop(&new_game, player_a, player_b, false, opt_A, opt_B);
 		if (new_game.game_result == PLAYER_A) {
 			++a_wins;
 		}
@@ -86,10 +88,15 @@ void benchmark_random() {
 }
 
 
-
 int main() {
+	srand(time(NULL));
+
+	benchmark(min_max_player, min_max_player, 1'000, 2, 1);
+	return 0;
 	GAMESTATE gamestate;
 	start_game(&gamestate);
+
+
 	game_loop(&gamestate, random_player, random_player, true);
 	return 0;
 }

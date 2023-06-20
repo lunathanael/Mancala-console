@@ -13,6 +13,7 @@ static constexpr int ALLOW_MULTIPLE_LAPS = 1;
 
 static constexpr int NUMBER_OF_TOTAL_HOUSES = (2 * NUMBER_OF_HOUSES_PER_SIDE);
 static constexpr int NUMBER_OF_TOTAL_HOLES = (NUMBER_OF_TOTAL_HOUSES + NUMBER_OF_PLAYERS);
+static constexpr int TOTAL_SEEDS_COUNT = (NUMBER_OF_TOTAL_HOUSES * STARTING_SEEDS_PER_HOUSE);
 
 static constexpr int PLAYER_TO_STORE_INDEX[2] = { 6, 13 };
 static std::map<int, std::string> HOLE_INDEX_TO_STRING = {
@@ -22,6 +23,14 @@ static std::map<int, std::string> HOLE_INDEX_TO_STRING = {
 static std::map<std::string, int> STRING_TO_HOLE_INDEX = {
 	{"A1", 0}, {"A2", 1}, {"A3", 2}, {"A4", 3}, {"A5", 4}, {"A6", 5}, {"SA", 6}, {"B1", 7}, {"B2", 8}, {"B3", 9}, {"B4", 10}, {"B5", 11}, {"B6", 12}, {"SB", 13}
 };
+
+
+// ENGINE STUFF
+static constexpr int MAX_DEPTH = 64;
+static constexpr int INFINITY_SCORE = 1'000'000;
+static constexpr int VICTORY_SCORE = 100'000;
+static constexpr int DRAW_SCORE = 0;
+
 
 /*
 STORE (B)
@@ -56,7 +65,6 @@ struct GAMESTATE {
 	int current_player = PLAYER_A;
 	int game_result = -1;
 };
-
 
 
 

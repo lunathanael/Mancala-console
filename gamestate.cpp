@@ -94,18 +94,30 @@ bool is_valid_move(GAMESTATE* gamestate, int hole_index) {
 }
 
 
-void do_capture(GAMESTATE* gs, int hole_index) {
+int do_capture(GAMESTATE* gs, int hole_index) {
 	int opposite_hole_index = ((2 * PLAYER_TO_STORE_INDEX[PLAYER_A]) - hole_index);
 	int seed_count = gs->board[opposite_hole_index];
 	gs->board[PLAYER_TO_STORE_INDEX[gs->current_player]] += seed_count;
 	gs->board[opposite_hole_index] = 0;
+
+	gs->current_player ^= 1;
+	return seed_count;
+}
+
+
+void undo_capture(GAMESTATE* gs, int hole_index, int seed_count) {
+	int opposite_hole_index = ((2 * PLAYER_TO_STORE_INDEX[PLAYER_A]) - hole_index);
+	gs->board[opposite_hole_index] += seed_count;
+	gs->board[PLAYER_TO_STORE_INDEX[gs->current_player]] -= seed_count;
 	return;
 }
 
 
-bool sowing(GAMESTATE* gs, int hole_index) {
-	if (not is_valid_move(gs, hole_index)) {
-		throw(505);
+int sowing(GAMESTATE* gs, int hole_index, bool verify) {
+	if (verify) {
+		if (not is_valid_move(gs, hole_index)) {
+			throw(505);
+		}
 	}
 
 	int seed_count = gs->board[hole_index];
@@ -125,19 +137,50 @@ bool sowing(GAMESTATE* gs, int hole_index) {
 		--seed_count;
 	}
 
-
-	if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
-		return true;
+	if (ALLOW_MULTIPLE_LAPS) {
+		if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
+			return -1;
+		}
 	}
 	if (ALLOW_CAPTURES) {
 		if (gs->board[hole_index] == 1) {
-			do_capture(gs, hole_index);
+			return do_capture(gs, hole_index);
 		}
 	}
 
-	return false;
+	// Next player
+	gs->current_player ^= 1;
+
+	return 0;
 }
 
+
+void unsow(GAMESTATE* gs, int hole_index, int seed_count, int move_type) {
+	// Last player
+	if (move_type != -1) {
+		gs->current_player ^= 1;
+	}
+
+	gs->board[hole_index] += seed_count;
+	while (seed_count > 0) {
+		++hole_index;
+
+		if (hole_index == NUMBER_OF_TOTAL_HOLES) {
+			hole_index = 0;
+		}
+		int opposite_player_index = (gs->current_player ^ 1);
+		if (hole_index == PLAYER_TO_STORE_INDEX[opposite_player_index]) {
+			continue;
+		}
+
+		--gs->board[hole_index];
+		--seed_count;
+	}
+	if (move_type > 0) {
+		undo_capture(gs, hole_index, move_type);
+	}
+	return;
+}
 
 
 void clear_side(GAMESTATE* gamestate, int side_to_clear) {
@@ -188,10 +231,7 @@ bool update_game_over(GAMESTATE* gamestate) {
 	}
 
 	if (game_over[0] or game_over[1]) {
-		if (game_over[0] and game_over[1]) {
-
-		}
-		else {
+		if (not (game_over[0] and game_over[1])) {
 			if (game_over[0]) {
 				clear_side(gamestate, PLAYER_B);
 			}
@@ -208,7 +248,7 @@ bool update_game_over(GAMESTATE* gamestate) {
 }
 
 
-int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), bool print_output, int opt_A, int opt_B) {
+int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*player_b)( GAMESTATE* gs, int), bool print_output, int opt_A, int opt_B) {
 	while (gamestate->game_result == -1) {
 		if (print_output) {
 			print_board(gamestate);
@@ -223,9 +263,9 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE* gs, int), int (*p
 			break;
 		}
 
-		bool multiple_laps = false;
+		
 		try {
-			multiple_laps = sowing(gamestate, hole_selected);
+			sowing(gamestate, hole_selected);
 		}
 		catch (...) {
 			cout << "MOVE ERROR!\n";
@@ -240,13 +280,6 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE* gs, int), int (*p
 		if (update_game_over(gamestate)) {
 			break;
 		}
-		if (ALLOW_MULTIPLE_LAPS) {
-			if (multiple_laps) {
-				continue;
-			}
-		}
-		// Next player
-		gamestate->current_player ^= 1;
 		continue;
 	}
 
