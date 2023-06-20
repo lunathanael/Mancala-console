@@ -213,8 +213,76 @@ int human_player(GAMESTATE* gs) {
 	return hole_index;
 }
 
+
+void clear_side(GAMESTATE* gamestate, int side_to_clear) {
+	int starter;
+	int cumm_seeds = 0;
+	if (side_to_clear == PLAYER_A) {
+		starter = 0;
+	}
+	else {
+		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	}
+	for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
+		cumm_seeds += gamestate->board[hole_index];
+		gamestate->board[hole_index] = 0;
+	}
+	return;
+}
+
+
+void update_game_result(GAMESTATE* gamestate) {
+	int player_a_score = gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_A]];
+	int player_b_score = gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_B]];
+	if (player_a_score > player_b_score) {
+		gamestate->game_result = PLAYER_A;
+	}
+	else if (player_b_score > player_a_score) {
+		gamestate->game_result = PLAYER_B;
+	}
+	else {
+		gamestate->game_result = NO_PLAYER;
+	}
+	return;
+}
+
+
+bool update_game_over(GAMESTATE* gamestate) {
+	bool game_over[2] = { true, true };
+	for (int hole_index = 0; hole_index < 6; ++hole_index) {
+		if (gamestate->board[hole_index] != 0) {
+			game_over[0] = false;
+		}
+	}
+	for (int hole_index = 7; hole_index < 13; ++hole_index) {
+		if (gamestate->board[hole_index] != 0) {
+			game_over[1] = false;
+		}
+	}
+
+	if (game_over[0] or game_over[1]) {
+		if (game_over[0] and game_over[1]) {
+
+		}
+		else {
+			if (game_over[0]) {
+				clear_side(gamestate, PLAYER_B);
+			}
+			else {
+				clear_side(gamestate, PLAYER_A);
+			}
+		}
+		update_game_result(gamestate);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
 int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_b)(GAMESTATE*gs), bool print_output = false) {
-	while (not gamestate->game_result) {
+	while (gamestate->game_result == -1) {
 		if (print_output) {
 			print_board(gamestate);
 		}
@@ -242,6 +310,9 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 			cout << "Hole selected: " << HOLE_INDEX_TO_STRING[hole_selected] << ".\n";
 		}
 
+		if (update_game_over(gamestate)) {
+			break;
+		}
 		if (ALLOW_MULTIPLE_LAPS) {
 			if (multiple_laps) {
 				continue;
@@ -251,6 +322,21 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 		gamestate->current_player ^= 1;
 		continue;
 	}
+
+	if (print_output) {
+		print_board(gamestate);
+		cout << "Game over!\n";
+		switch (gamestate->game_result) {
+		case PLAYER_A:
+		case PLAYER_B:
+			cout << "Game won by: " << PLAYER_INDEX_TO_STRING[gamestate->game_result];
+			break;
+		case NO_PLAYER:
+			cout << "Game was a tie!\n";
+			break;
+		}
+	}
+
 	return true;
 }
 

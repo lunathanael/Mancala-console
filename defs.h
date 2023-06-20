@@ -34,7 +34,7 @@ STORE (B)
 */
 
 enum PLAYERS{ 
-	PLAYER_A, PLAYER_B
+	PLAYER_A, PLAYER_B, NO_PLAYER
 };
 
 
@@ -54,7 +54,7 @@ constexpr int get_hole_side(int hole) {
 struct GAMESTATE {
 	unsigned int board[NUMBER_OF_TOTAL_HOLES] = {};
 	int current_player = PLAYER_A;
-	int game_result = 0;
+	int game_result = -1;
 };
 
 
