@@ -347,12 +347,8 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 	return true;
 }
 
-
-int main() {
-	srand(time(NULL));
-
+void benchmark_random() {
 	int a_wins = 0, b_wins = 0, ties = 0, total_games = 100'000;
-
 	float progress = 0.0;
 	int barWidth = 70;
 	for (int i = 0; i < total_games; ++i) {
@@ -386,6 +382,11 @@ int main() {
 	}
 	cout << endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
 	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.";
+}
 
+int main() {
+	srand(time(NULL));
+	GAMESTATE gamestate;
+	game_loop(&gamestate, random_player, random_player, true);
 	return 0;
 }
