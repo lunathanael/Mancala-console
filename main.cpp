@@ -2,6 +2,8 @@
 #include "defs.h"
 #include <algorithm>
 #include <string>
+#include <random>
+#include <time.h>
 
 using namespace std;
 
@@ -110,6 +112,25 @@ void start_game(GAMESTATE* gs) {
 }
 
 
+bool is_valid_move(GAMESTATE* gamestate, int hole_index) {
+	int starter;
+	if (gamestate->current_player == PLAYER_A) {
+		starter = 0;
+	}
+	else {
+		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	}
+	if (hole_index < starter or hole_index >(starter + 5)) {
+		return false;
+	}
+
+	if (gamestate->board[hole_index] == 0) {
+		return false;
+	}
+	return true;
+}
+
+
 void do_capture(GAMESTATE* gs, int hole_index) {
 	int opposite_hole_index = ((2 * PLAYER_TO_STORE_INDEX[PLAYER_A]) - hole_index);
 	int seed_count = gs->board[opposite_hole_index];
@@ -120,16 +141,8 @@ void do_capture(GAMESTATE* gs, int hole_index) {
 
 
 bool sowing(GAMESTATE*gs, int hole_index) {
-	// verify
-	int starter;
-	if (gs->current_player == PLAYER_A) {
-		starter = 0;
-	}
-	else {
-		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
-	}
-	if (hole_index < starter or hole_index > (starter + 5)) {
-		throw (505);
+	if (not is_valid_move(gs, hole_index)) {
+		throw(505);
 	}
 
 	int seed_count = gs->board[hole_index];
@@ -162,6 +175,26 @@ bool sowing(GAMESTATE*gs, int hole_index) {
 	return false;
 }
 
+
+int random_player(GAMESTATE* gs) {
+	int starter, hole_index;
+	if (gs->current_player == PLAYER_A) {
+		starter = 0;
+	}
+	else {
+		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
+	}
+	int lb = starter, ub = starter + 5;
+
+	find_loop:
+	hole_index = (rand() % (ub - lb + 1)) + lb;
+	if (not is_valid_move(gs, hole_index)) {
+		goto find_loop;
+	}
+	return hole_index;
+}
+
+
 int human_player(GAMESTATE* gs) {
 	cout << "Player " << PLAYER_INDEX_TO_STRING[gs->current_player] << "'s turn.\n";
 	input_loop:
@@ -172,14 +205,7 @@ int human_player(GAMESTATE* gs) {
 	hole_index = STRING_TO_HOLE_INDEX[input];
 	cout << endl;
 
-	int starter;
-	if (gs->current_player == PLAYER_A) {
-		starter = 0;
-	}
-	else {
-		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
-	}
-	if (hole_index < starter or hole_index >(starter + 5)) {
+	if (not is_valid_move(gs, hole_index)) {
 		cout << "Invalid hole!\n";
 		goto input_loop;
 	}
@@ -221,9 +247,8 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 				continue;
 			}
 		}
-		else {
-			gamestate->current_player ^= 1;
-		}
+		// Next player
+		gamestate->current_player ^= 1;
 		continue;
 	}
 	return true;
@@ -231,10 +256,13 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 
 
 int main() {
+	srand(time(0));
+
+
 	GAMESTATE new_game;
 	start_game(&new_game);
 	print_help();
-	game_loop(&new_game, human_player, human_player, true);
+	game_loop(&new_game, human_player, random_player, true);
 
 	return 0;
 }
