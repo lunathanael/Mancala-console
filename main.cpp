@@ -91,7 +91,7 @@ void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* g
 int main() {
 	srand(time(NULL));
 
-	benchmark(min_max_player, min_max_player, 1'000, 2, 1);
+	benchmark(min_max_player, min_max_player, 1'000, 10, 1);
 	return 0;
 	GAMESTATE gamestate;
 	start_game(&gamestate);
