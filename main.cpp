@@ -202,9 +202,15 @@ int human_player(GAMESTATE* gs) {
 	int hole_index = -1;
 	string input;
 	cin >> input;
-	hole_index = STRING_TO_HOLE_INDEX[input];
 	cout << endl;
 
+	if (STRING_TO_HOLE_INDEX.find(input) == STRING_TO_HOLE_INDEX.end()) {
+		cout << "Invalid input!\n";
+		goto input_loop;
+	}
+	else {
+		hole_index = STRING_TO_HOLE_INDEX[input];
+	}
 	if (not is_valid_move(gs, hole_index)) {
 		cout << "Invalid hole!\n";
 		goto input_loop;
@@ -227,6 +233,7 @@ void clear_side(GAMESTATE* gamestate, int side_to_clear) {
 		cumm_seeds += gamestate->board[hole_index];
 		gamestate->board[hole_index] = 0;
 	}
+	gamestate->board[PLAYER_TO_STORE_INDEX[side_to_clear ^ 1]] += cumm_seeds;
 	return;
 }
 
@@ -342,13 +349,43 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE*gs), int (*player_
 
 
 int main() {
-	srand(time(0));
+	srand(time(NULL));
+
+	int a_wins = 0, b_wins = 0, ties = 0, total_games = 100'000;
+
+	float progress = 0.0;
+	int barWidth = 70;
+	for (int i = 0; i < total_games; ++i) {
+		if (i % 2047 == 0) {
+			progress = (float)i / (float)total_games;
+			std::cout << "[";
+			int pos = barWidth * progress;
+			for (int i = 0; i < barWidth; ++i) {
+				if (i < pos) std::cout << "=";
+				else if (i == pos) std::cout << ">";
+				else std::cout << " ";
+			}
+			std::cout << "] " << int(progress * 100.0) << " %\r";
+			std::cout.flush();
+		}
 
 
-	GAMESTATE new_game;
-	start_game(&new_game);
-	print_help();
-	game_loop(&new_game, human_player, random_player, true);
+		GAMESTATE new_game;
+		start_game(&new_game);
+		game_loop(&new_game, random_player, random_player, false);
+		if (new_game.game_result == PLAYER_A) {
+			++a_wins;
+		}
+		else if (new_game.game_result == PLAYER_B) {
+			++b_wins;
+		}
+		else {
+			++ties;
+		}
+		continue;
+	}
+	cout << endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
+	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.";
 
 	return 0;
 }
