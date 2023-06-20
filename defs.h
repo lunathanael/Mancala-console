@@ -38,7 +38,7 @@ enum PLAYERS{
 };
 
 
-std::string PLAYER_INDEX_TO_STRING[2] = { "Player A", "Player B" };
+static std::string PLAYER_INDEX_TO_STRING[2] = { "Player A", "Player B" };
 
 
 enum HOLE_REFERENCE {
