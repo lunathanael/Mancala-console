@@ -157,9 +157,7 @@ int sowing(GAMESTATE* gs, int hole_index, bool verify) {
 
 void unsow(GAMESTATE* gs, int hole_index, int seed_count, int move_type) {
 	// Last player
-	if (move_type != -1) {
-		gs->current_player ^= 1;
-	}
+	gs->current_player ^= 1;
 
 	gs->board[hole_index] += seed_count;
 	while (seed_count > 0) {

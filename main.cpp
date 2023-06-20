@@ -2,6 +2,7 @@
 #include <string>
 #include <random>
 #include <time.h>
+#include <Windows.h>
 
 #include "defs.h"
 #include "gamestate.h"
@@ -54,6 +55,8 @@ void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* g
 	int barWidth = 70;
 	int segments = 125;
 	int seg_len = trials / segments;
+
+	int starttime = GetTickCount();;
 	for (int i = 0; i < total_games; ++i) {
 		if (i % seg_len == 0) {
 			progress = (float)i / (float)total_games;
@@ -83,20 +86,26 @@ void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* g
 		}
 		continue;
 	}
+	int time = GetTickCount() - starttime;
+	double trials_per_second = (((double)trials / (double)time));
 	cout << endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
-	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.";
+	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.\n";
+	cout << trials << " trials took a total of " << time << "ms, " << trials_per_second << " K trials per second.\n";
 }
 
 
 int main() {
 	srand(time(NULL));
 
-	benchmark(min_max_player, min_max_player, 1'000, 10, 1);
+	benchmark(alpha_beta_player, alpha_beta_player, 1'000'000, 3, 1);
 	return 0;
 	GAMESTATE gamestate;
 	start_game(&gamestate);
+	int depth = 1;
+	while (1) {
+		cout << alpha_beta_player(&gamestate, depth++) << endl;
+	}
 
-
-	game_loop(&gamestate, random_player, random_player, true);
+	game_loop(&gamestate, alpha_beta_player, random_player, true, 6);
 	return 0;
 }
