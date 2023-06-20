@@ -128,7 +128,9 @@ int min_max(GAMESTATE* gs, int depth) {
 		move_found = true;
 		int seed_count = gs->board[hole_index];
 		int move_type = sowing(gs, hole_index);
-		best_eval = max(best_eval, -min_max(gs, depth - 1));
+		if (move_type == -1) {
+			best_eval = max(best_eval, eval);
+		}
 		unsow(gs, hole_index, seed_count, move_type);
 	}
 
@@ -147,6 +149,11 @@ int min_max_player(GAMESTATE* gs, int depth) {
 	GAMESTATE search_gs;
 	memcpy(&search_gs, gs, sizeof(*gs));
 
+	if (gs->current_player == PLAYER_A) {
+
+	}
+
+
 	int best_eval = (-INFINITY_SCORE);
 	int starter = (search_gs.current_player == PLAYER_A) ? 0 : (PLAYER_TO_STORE_INDEX[PLAYER_A] + 1);
 	for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
@@ -156,6 +163,9 @@ int min_max_player(GAMESTATE* gs, int depth) {
 		int seed_count = search_gs.board[hole_index];
 		int move_type = sowing(&search_gs, hole_index);
 		int eval = -min_max(&search_gs, depth - 1);
+		if (move_type == -1) {
+			eval = -eval;
+		}
 		if (eval > best_eval) {
 			best_eval = eval;
 			best_hole = hole_index;
