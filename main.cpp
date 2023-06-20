@@ -95,12 +95,16 @@ void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* g
 
 
 int main() {
-	srand(time(NULL));
+	time_seed = time(NULL);
+	srand(time_seed);
 
-	benchmark(alpha_beta_player, alpha_beta_player, 1'000'000, 3, 1);
-	return 0;
+	//benchmark(alpha_beta_player, random_player, 1'000, 10, 1);
 	GAMESTATE gamestate;
 	start_game(&gamestate);
+
+	game_loop(&gamestate, alpha_beta_player, alpha_beta_player, true, 10, 1);
+
+	return 0;
 	int depth = 1;
 	while (1) {
 		cout << alpha_beta_player(&gamestate, depth++) << endl;

@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <random>
 
 #define NUMBER_OF_HOUSES_PER_SIDE 6
 #define NUMBER_OF_PLAYERS 2
@@ -16,6 +17,9 @@ static constexpr int NUMBER_OF_TOTAL_HOLES = (NUMBER_OF_TOTAL_HOUSES + NUMBER_OF
 static constexpr int TOTAL_SEEDS_COUNT = (NUMBER_OF_TOTAL_HOUSES * STARTING_SEEDS_PER_HOUSE);
 
 static constexpr int PLAYER_TO_STORE_INDEX[2] = { 6, 13 };
+static constexpr int A_HOLE_RANGE[6] = { 0, 1, 2, 3, 4, 5};
+static constexpr int B_HOLE_RANGE[6] = { 7, 8, 9, 10, 11, 12 };
+static int time_seed;
 static std::map<int, std::string> HOLE_INDEX_TO_STRING = {
 	{0, "A1"}, {1, "A2"}, {2, "A3"}, {3, "A4"}, {4, "A5"}, {5, "A6"}, {6, "SA"}, {7, "B1"}, {8, "B2"}, {9, "B3"}, {10, "B4"}, {11, "B5"}, {12, "B6"}, {13, "SB"}
 };
