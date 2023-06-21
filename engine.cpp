@@ -7,6 +7,7 @@
 
 using namespace std;
 
+
 bool validate_move(GAMESTATE* gamestate, int hole_index) {
 	int starter;
 	if (gamestate->current_player == PLAYER_A) {
@@ -24,6 +25,7 @@ bool validate_move(GAMESTATE* gamestate, int hole_index) {
 	}
 	return true;
 }
+
 
 int random_player(GAMESTATE* gs, int) {
 	int starter, hole_index;
@@ -78,24 +80,26 @@ input_loop:
 }
 
 
-// min max stuff
-
 int add_side(GAMESTATE* gamestate) {
 
-	int added_scores[2];
+	int added_scores[2] = { 0, 0 };
 	for (int hole_index = 0; hole_index < 6; ++hole_index) {
 		added_scores[PLAYER_A] += gamestate->board[A_HOLE_RANGE[hole_index]];
 		added_scores[PLAYER_B] += gamestate->board[B_HOLE_RANGE[hole_index]];
 	}
 	if (added_scores[PLAYER_A] != added_scores[PLAYER_B]) {
 		if (added_scores[PLAYER_A] == 0) {
-			return -added_scores[PLAYER_B];
+			return (-added_scores[PLAYER_B]);
 		}
 		if (added_scores[PLAYER_B] == 0) {
 			return added_scores[PLAYER_A];
 		}
+		return 420;
 	}
-	return 0;
+	else if (added_scores[PLAYER_A] == 0) {
+		return 0;
+	}
+	else { return 420; }
 }
 
 
@@ -113,132 +117,136 @@ int evaluate(GAMESTATE* gs, int added_score=0) {
 		}
 	}
 
-	if (a_score > (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS)) {
+	if (a_score > WINNING_SCORE) {
 		a_score += VICTORY_SCORE;
 	}
-	if (b_score > (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS)) {
+	if (b_score > WINNING_SCORE) {
 		b_score += VICTORY_SCORE;
 	}
 	return (a_score - b_score);
 }
 
 
-
 int min_max(GAMESTATE* gs, int depth) {
+	int added_seeds = add_side(gs);
+	if (added_seeds != 420) {
+		return evaluate(gs, added_seeds);
+	}
 	if (depth == 0) {
 		return evaluate(gs);
 	}
+
+
 	int best_eval;
-	bool move_found = false;
+	int range_hole[6];
 	if (gs->current_player == PLAYER_A) {
 		best_eval = -INFINITY_SCORE;
-		int starter = 0;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
+		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
 			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			move_found = true;
-			int seed_count = gs->board[hole_index];
-			int move_type = sowing(gs, hole_index);
-			int eval = min_max(gs, depth - 1);
-			if (eval > best_eval) {
-				best_eval = eval;
-			}
-			unsow(gs, hole_index, seed_count, move_type);
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			best_eval = max(min_max(&gamestate, depth - 1), best_eval);
+			//unsow(gs, hole_index, seed_count, move_type);
+
 		}
 	}
 	else {
 		best_eval = INFINITY_SCORE;
-		int starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
+		copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
 			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			move_found = true;
-			int seed_count = gs->board[hole_index];
-			int move_type = sowing(gs, hole_index);
-			int eval = min_max(gs, depth - 1);
-			if (eval < best_eval) {
-				best_eval = eval;
-			}
-			unsow(gs, hole_index, seed_count, move_type);
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			best_eval = min(min_max(&gamestate, depth - 1), best_eval);
+			//unsow(&gs, hole_index, seed_count, move_type);
+
 		}
 	}
 
-	if (move_found == false) {
-		int added_seeds = add_side(gs);
-		return evaluate(gs, added_seeds);
-	}
 	return best_eval;
 }
 
 
-int min_max_player(GAMESTATE* given_gs, int depth) {
+int min_max_player(GAMESTATE* gs, int depth) {
 	int best_hole = -1;
 
-	GAMESTATE gs;
-	memcpy(&gs, given_gs, sizeof(*given_gs));
-
 	int best_eval;
-	if (gs.current_player == PLAYER_A) {
+	int range_hole[6];
+	if (gs->current_player == PLAYER_A) {
 		best_eval = -INFINITY_SCORE;
-		int starter = 0;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
-			if (gs.board[hole_index] == 0) {
+		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
+		shuffle(range_hole, range_hole + 6, default_random_engine(time_seed));
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			int seed_count = gs.board[hole_index];
-			int move_type = sowing(&gs, hole_index);
-			int eval = min_max(&gs, depth - 1);
-			if (eval > best_eval) {
+
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			int eval = min_max(&gamestate, depth - 1);
+			//unsow(&gs, hole_index, seed_count, move_type);
+
+			if (best_eval < eval) {
 				best_eval = eval;
 				best_hole = hole_index;
 			}
-			unsow(&gs, hole_index, seed_count, move_type);
 		}
 	}
 	else {
 		best_eval = INFINITY_SCORE;
-		int starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
-			if (gs.board[hole_index] == 0) {
+		copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
+		shuffle(range_hole, range_hole + 6, default_random_engine(time_seed));
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			int seed_count = gs.board[hole_index];
-			int move_type = sowing(&gs, hole_index);
-			int eval = min_max(&gs, depth - 1);
+
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			int eval = min_max(&gamestate, depth - 1);
+			//unsow(&gs, hole_index, seed_count, move_type);
+
 			if (eval < best_eval) {
 				best_eval = eval;
 				best_hole = hole_index;
 			}
-			unsow(&gs, hole_index, seed_count, move_type);
 		}
 	}
-
+	//cout << "Eval: " << best_eval << ' ' << HOLE_INDEX_TO_STRING[best_hole] << endl;
 	return best_hole;
 }
 
 
-int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
-	int added_seeds = add_side(given_gs);
-	if (added_seeds != 0) {
-		return evaluate(given_gs, added_seeds);
+int alpha_beta(GAMESTATE* gs, int depth, int alpha, int beta) {
+	int added_seeds = add_side(gs);
+	if (added_seeds != 420) {
+		return evaluate(gs, added_seeds);
 	}
 	if (depth == 0) {
-		return evaluate(given_gs);
+		return evaluate(gs);
 	}
 
 
 	int best_eval;
-	if (given_gs->current_player == PLAYER_A) {
+	int range_hole[6];
+	if (gs->current_player == PLAYER_A) {
 		best_eval = -INFINITY_SCORE;
-		int starter = 0;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
-			if (given_gs->board[hole_index] == 0) {
+		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			GAMESTATE gamestate;
-			memcpy(&gamestate, given_gs, sizeof(*given_gs));
+			copy_gamestate(gs);
 			sowing(&gamestate, hole_index, false);
 			best_eval = max(alpha_beta(&gamestate, depth - 1, alpha, beta), best_eval);
 			//unsow(gs, hole_index, seed_count, move_type);
@@ -251,13 +259,13 @@ int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
 	}
 	else {
 		best_eval = INFINITY_SCORE;
-		int starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
-		for (int hole_index = starter; hole_index < starter + 6; ++hole_index) {
-			if (given_gs->board[hole_index] == 0) {
+		copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
+		for (int hole_query = 0; hole_query < 6; ++hole_query) {
+			int hole_index = range_hole[hole_query];
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
-			GAMESTATE gamestate;
-			memcpy(&gamestate, given_gs, sizeof(*given_gs));
+			copy_gamestate(gs);
 			sowing(&gamestate, hole_index, false);
 			best_eval = min(alpha_beta(&gamestate, depth - 1, alpha, beta), best_eval);
 			//unsow(&gs, hole_index, seed_count, move_type);
@@ -273,27 +281,26 @@ int alpha_beta(GAMESTATE* given_gs, int depth, int alpha, int beta) {
 }
 
 
-int alpha_beta_player(GAMESTATE* given_gs, int depth) {
+int alpha_beta_player(GAMESTATE* gs, int depth) {
 	int best_hole = -1;
 
 	int best_eval;
 	int range_hole[6];
 	int alpha = -INFINITY_SCORE;
 	int beta = INFINITY_SCORE;
-	if (given_gs->current_player == PLAYER_A) {
+	if (gs->current_player == PLAYER_A) {
 		best_eval = -INFINITY_SCORE;
 		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
 		shuffle(range_hole, range_hole + 6, default_random_engine(time_seed));
 		for (int hole_query = 0; hole_query < 6; ++hole_query) {
 			int hole_index = range_hole[hole_query];
-			if (given_gs->board[hole_index] == 0) {
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
 
-			GAMESTATE gs;
-			memcpy(&gs, given_gs, sizeof(*given_gs));
-			sowing(&gs, hole_index, false);
-			int eval = alpha_beta(&gs, depth - 1, alpha, beta);
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			int eval = alpha_beta(&gamestate, depth - 1, alpha, beta);
 			//unsow(&gs, hole_index, seed_count, move_type);
 
 			if (best_eval < eval) {
@@ -312,14 +319,13 @@ int alpha_beta_player(GAMESTATE* given_gs, int depth) {
 		shuffle(range_hole, range_hole + 6, default_random_engine(time_seed));
 		for (int hole_query = 0; hole_query < 6; ++hole_query) {
 			int hole_index = range_hole[hole_query];
-			if (given_gs->board[hole_index] == 0) {
+			if (gs->board[hole_index] == 0) {
 				continue;
 			}
 
-			GAMESTATE gs;
-			memcpy(&gs, given_gs, sizeof(*given_gs));
-			sowing(&gs, hole_index, false);
-			int eval = alpha_beta(&gs, depth - 1, alpha, beta);
+			copy_gamestate(gs);
+			sowing(&gamestate, hole_index, false);
+			int eval = alpha_beta(&gamestate, depth - 1, alpha, beta);
 			//unsow(&gs, hole_index, seed_count, move_type);
 
 			if (eval < best_eval) {
@@ -332,6 +338,6 @@ int alpha_beta_player(GAMESTATE* given_gs, int depth) {
 			}
 		}
 	}
-	//cout << "Eval: " << best_eval << ' ';
+	//cout << "Eval: " << best_eval << ' ' << HOLE_INDEX_TO_STRING[best_hole] << endl;
 	return best_hole;
 }

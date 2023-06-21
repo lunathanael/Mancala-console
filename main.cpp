@@ -1,14 +1,51 @@
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <random>
 #include <time.h>
-#include <Windows.h>
+#include <io.h>
+#include <map>
 
 #include "defs.h"
 #include "gamestate.h"
 #include "engine.h"
+#include "perft.h"
 
 using namespace std;
+
+
+
+enum COMMANDS
+{
+	U_unrecognized, U_help, U_newgame, U_stop,
+	U_perft, U_quit, U_simulate,
+	U_display, U_settings
+};
+
+
+static map<string, COMMANDS> MAP_COMMANDS =
+{
+	{"help", U_help}, {"newgame", U_newgame}, {"stop", U_stop}, {"perft", U_perft},
+	{"quit", U_quit}, {"simulate", U_simulate},
+	{"d", U_display}, {"settings", U_settings}
+};
+
+
+vector<string> split_command(const string& command)
+{
+
+	stringstream stream(command);
+	string intermediate;
+	vector<string> tokens;
+
+	while (getline(stream, intermediate, ' '))
+	{
+		tokens.push_back(intermediate);
+	}
+
+	return tokens;
+}
 
 
 void print_help() {
@@ -48,74 +85,102 @@ void print_help() {
 }
 
 
-void benchmark(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A = -1, int opt_B = -1) {
-	int a_wins = 0, b_wins = 0, ties = 0, total_games = trials;
-	float progress = 0.0;
+void console_loop() {
 
-	int barWidth = 70;
-	int segments = 125;
-	int seg_len = trials / segments;
+	GAMESTATE gamestate;
+	bool game_started = false;
 
-	int starttime = GetTickCount();;
-	for (int i = 0; i < total_games; ++i) {
-		if (i % seg_len == 0) {
-			progress = (float)i / (float)total_games;
-			std::cout << "[";
-			int pos = barWidth * progress;
-			for (int i = 0; i < barWidth; ++i) {
-				if (i < pos) std::cout << "=";
-				else if (i == pos) std::cout << ">";
-				else std::cout << " ";
+	while (1) {
+		string input;
+
+		// get user / GUI input
+		if (!getline(cin, input))
+		{
+			// continue the loop
+			break;
+		}
+
+		// make sure input is available
+		if (!input.length())
+		{
+			// continue the loop
+			continue;
+		}
+
+		vector<string> tokens = split_command(input);
+
+		switch (MAP_COMMANDS[tokens[0]])
+		{
+		case (U_quit):
+		{
+			goto exit_loop;
+			break;
+		}
+		case (U_newgame):
+		{
+			start_game(&gamestate);
+			game_started = true;
+			break;
+		}
+		case (U_perft):
+		{
+			const int p_depth = stoi(tokens[1]);
+			if (!game_started) // call parse position function
+			{
+				start_game(&gamestate);
+				game_started = true;
 			}
-			std::cout << "] " << int(progress * 100.0) << " %\r";
-			std::cout.flush();
+			perft_test(&gamestate, p_depth);
+			break;
+		}
+		case (U_display):
+		{
+			print_board(&gamestate);
+			break;
 		}
 
+		case (U_help):
+		{
+			print_help();
+			break;
+		}
 
-		GAMESTATE new_game;
-		start_game(&new_game);
-		game_loop(&new_game, player_a, player_b, false, opt_A, opt_B);
-		if (new_game.game_result == PLAYER_A) {
-			++a_wins;
+		case (U_unrecognized):
+		{
+			printf("Unknown command\n");
+			break;
 		}
-		else if (new_game.game_result == PLAYER_B) {
-			++b_wins;
+		case (U_settings):
+		{
+			//parse_settings(input);
+			break;
 		}
-		else {
-			++ties;
+		case (U_simulate):
+		{
+			//parse_simulate(input);
+			break;
 		}
-		continue;
+		}
 	}
-	int time = GetTickCount() - starttime;
-	double trials_per_second = (((double)trials / (double)time));
-	cout << endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
-	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.\n";
-	cout << trials << " trials took a total of " << time << "ms, " << trials_per_second << " K trials per second.\n";
+exit_loop:
+	return;
 }
 
 
 int main() {
 	time_seed = time(NULL);
 	srand(time_seed);
+	console_loop();
 
-	print_help();
-	//benchmark(alpha_beta_player, random_player, 1'000, 10, 1);
-	GAMESTATE gamestate;
-	start_game(&gamestate);
+	//simulate_games(alpha_beta_player, random_player, 1'000, 14, 1);
 
-	int input;
-	cin >> input;
-	if (input == 1) {
-		game_loop(&gamestate, alpha_beta_player, human_player, true, 16, 1);
-	}
-	else {
-		game_loop(&gamestate, human_player, alpha_beta_player, true, 16, 16);
-	}
-
-
-	//int depth = 1;
-	//while (1) {
-	//	cout << "Depth: " << depth << "Move index: " << alpha_beta_player(&gamestate, depth++) << endl;
+	//int input;
+	//cin >> input;
+	//if (input == 1) {
+	//	game_loop(&gamestate, alpha_beta_player, human_player, true, 16, 1);
+	//}
+	//else {
+	//	game_loop(&gamestate, human_player, alpha_beta_player, true, 16, 16);
 	//}
 
 

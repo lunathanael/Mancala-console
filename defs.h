@@ -35,6 +35,7 @@ static constexpr int MAX_DEPTH = 64;
 static constexpr int INFINITY_SCORE = 1'000'000;
 static constexpr int VICTORY_SCORE = 100'000;
 static constexpr int DRAW_SCORE = 0;
+static constexpr int WINNING_SCORE = (TOTAL_SEEDS_COUNT / NUMBER_OF_PLAYERS);
 
 
 /*
@@ -70,6 +71,11 @@ struct GAMESTATE {
 	int current_player = PLAYER_A;
 	int game_result = -1;
 };
+
+
+#define copy_gamestate(gs)		\
+	GAMESTATE gamestate; \
+	memcpy(&gamestate, gs, sizeof(*gs)); \
 
 
 
