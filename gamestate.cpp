@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <string>
 
+using namespace std;
 
 
 void print_number(int number) {

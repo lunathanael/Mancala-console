@@ -9,9 +9,7 @@
 #include "gamestate.h"
 #include "engine.h"
 
-using namespace std;
-
-
+	
 void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A = -1, int opt_B = -1) {
 	int a_wins = 0, b_wins = 0, ties = 0, total_games = trials;
 	float progress = 0.0;
@@ -52,9 +50,9 @@ void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTA
 	}
 	int time = GetTickCount() - starttime;
 	double trials_per_second = (((double)trials / (double)time));
-	cout << endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
-	cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.\n";
-	cout << trials << " trials took a total of " << time << "ms, " << trials_per_second << " K trials per second.\n";
+	std::cout << std::endl << "A won " << ((float)a_wins / float(total_games) * 100) << "% of the games. B won " << ((float)b_wins / float(total_games) * 100) << "% of the games.\n";
+	std::cout << ((float)ties / float(total_games) * 100) << "% of the games were ties.\n";
+	std::cout << trials << " trials took a total of " << time << "ms, " << trials_per_second << " K trials per second.\n";
 }
 
 
@@ -69,11 +67,11 @@ void perft_driver(GAMESTATE* gs, int depth, int* p_nodes)
 	int range_hole[6];
 	if (gs->current_player == PLAYER_A) {
 
-		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
+		std::copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
 	}
 	else {
 
-		copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
+		std::copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
 	}
 
 	for (int index = 0; index < 6; ++index) {
@@ -95,11 +93,11 @@ void perft_test(GAMESTATE* gs, int depth) {
 	int range_hole[6];
 	if (gs->current_player == PLAYER_A) {
 
-		copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
+		std::copy(A_HOLE_RANGE, A_HOLE_RANGE + 6, range_hole);
 	}
 	else {
 
-		copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
+		std::copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
 	}
 	long start = GetTickCount();
 
@@ -114,8 +112,8 @@ void perft_test(GAMESTATE* gs, int depth) {
 		perft_driver(&gamestate, depth - 1, &p_nodes);
 
 		long long old_nodes = p_nodes - cummulative_nodes;
-		string move_string = HOLE_INDEX_TO_STRING[hole_index];
-		cout << "     " << move_string << "       " << old_nodes << "\n";
+		std::string move_string = HOLE_INDEX_TO_STRING[hole_index];
+		std::cout << "     " << move_string << "       " << old_nodes << "\n";
 		//printf("     %s    %lld\n", (move_string), old_nodes);
 	}
 
