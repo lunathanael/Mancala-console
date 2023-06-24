@@ -10,13 +10,16 @@
 #include "engine.h"
 
 	
-void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A = -1, int opt_B = -1) {
+void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A, int opt_B) {
 	int a_wins = 0, b_wins = 0, ties = 0, total_games = trials;
 	float progress = 0.0;
 
 	int barWidth = 70;
 	int segments = 125;
 	int seg_len = trials / segments;
+	if (seg_len <= 0) {
+		seg_len = 1;
+	}
 
 	int starttime = GetTickCount();;
 	for (int i = 0; i < total_games; ++i) {
@@ -24,9 +27,9 @@ void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTA
 			progress = (float)i / (float)total_games;
 			std::cout << "[";
 			int pos = barWidth * progress;
-			for (int i = 0; i < barWidth; ++i) {
-				if (i < pos) std::cout << "=";
-				else if (i == pos) std::cout << ">";
+			for (int j = 0; j < barWidth; ++j) {
+				if (j < pos) std::cout << "=";
+				else if (j == pos) std::cout << ">";
 				else std::cout << " ";
 			}
 			std::cout << "] " << int(progress * 100.0) << " %\r";

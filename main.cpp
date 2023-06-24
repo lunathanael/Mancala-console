@@ -38,8 +38,9 @@ enum ENGINES
 };
 
 
-static map<ENGINES, int (*)(GAMESTATE* gs, int)> MAP_ENGINES = {
-	{HUMAN_PLAYER, human_player}
+static map<int, int (*)(GAMESTATE* gs, int)> MAP_ENGINES = {
+	{HUMAN_PLAYER, human_player}, {RANDOM_PLAYER, random_player},
+	{MIN_MAX_PLAYER, min_max_player}, {ALPHA_BETA_PLAYER, alpha_beta_player}
 };
 
 
@@ -100,7 +101,7 @@ int parse_board(GAMESTATE* gs, vector<string> tokens) {
 	GAMESTATE gamestate;
 	static const int expected_board_size = (NUMBER_OF_TOTAL_HOLES);
 	if (tokens.size() != (2 + expected_board_size)) {
-		return false;
+		return true;
 	}
 	int current_number;
 	for (int current_index = 0; current_index < expected_board_size; ++current_index) {
@@ -108,14 +109,53 @@ int parse_board(GAMESTATE* gs, vector<string> tokens) {
 	}
 	const int current_player_index = stoi(tokens.back());
 	if ((current_player_index != PLAYER_A) and (current_player_index != PLAYER_B)) {
-		return false;
+		return true;
 	}
 	gamestate.current_player = current_player_index;
 	update_game_over(&gamestate);
 
 	memcpy(gs, &gamestate, sizeof(gamestate));
 	// ex: 4 4 4 4 4 4 0 4 4 4 4 4 4 0 0
-	return true;
+	return false;
+}
+
+
+int parse_simulation(vector<string> tokens) {
+	int (*player_a)(GAMESTATE * gs, int);
+	int (*player_b)(GAMESTATE * gs, int);
+
+	if (MAP_ENGINES.find(stoi(tokens.at(1))) == MAP_ENGINES.end()) {
+		return 1;
+	}
+	else {
+		player_a = MAP_ENGINES[stoi(tokens.at(1))];
+	}
+	if (MAP_ENGINES.find(stoi(tokens.at(2))) == MAP_ENGINES.end()) {
+		return 1;
+	}
+	else {
+		player_b = MAP_ENGINES[stoi(tokens.at(2))];
+	}
+
+	int trials = stoi(tokens.at(3));
+	int opt_a = 0;
+	int opt_b = 0;
+	if (tokens.size() > 4) {
+		opt_a = stoi(tokens.at(4));
+		if (tokens.size() == 6) {
+			opt_b = stoi(tokens.at(5));
+		}
+	}
+
+	try {
+		simulate_games(player_a, player_b, trials, opt_a, opt_b);
+	}
+	catch (...) {
+		cout << "Simulation failed!\n";
+		return 1;
+	}
+	// simulate 3 3 100 16 16
+	return false;
 }
 
 
@@ -186,13 +226,20 @@ void console_loop() {
 		}
 		case (U_simulate):
 		{
-			//parse_simulate(tokens);
+			try {
+				if (parse_simulation(tokens)) {
+					cout << "Invalid simulation commands.\n";
+				}
+			}
+			catch (...) {
+				cout << "Could not parse input.\n";
+			}
 			break;
 		}
 		case (U_board):
 		{
 			try {
-				if (not parse_board(&gamestate, tokens)) {
+				if (parse_board(&gamestate, tokens)) {
 					cout << "Board could not be parsed!\n";
 				}	
 			}
@@ -211,12 +258,10 @@ exit_loop:
 int main() {
 	time_seed = time(NULL);
 	srand(time_seed);
-	//GAMESTATE gamestate;
-	//start_game(&gamestate);
-	//print_help();
+
 	console_loop();
 
-	//simulate_games(alpha_beta_player, random_player, 1'000, 14, 1);
+	//
 
 	//int input;
 	//cin >> input;
