@@ -10,6 +10,7 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)(GAMESTATE* gs, int), int (*p
 int sowing(GAMESTATE* gs, int hole_index, bool verify = true);
 void print_board(GAMESTATE* gamestate);
 void unsow(GAMESTATE* gs, int hole_index, int seed_count, int move_type = 0);
+bool update_game_over(GAMESTATE* gamestate);
 
 
 #endif

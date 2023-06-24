@@ -20,7 +20,7 @@ enum COMMANDS
 {
 	U_unrecognized, U_help, U_newgame, U_stop,
 	U_perft, U_quit, U_simulate,
-	U_display, U_settings
+	U_display, U_board
 };
 
 
@@ -28,7 +28,18 @@ static map<string, COMMANDS> MAP_COMMANDS =
 {
 	{"help", U_help}, {"newgame", U_newgame}, {"stop", U_stop}, {"perft", U_perft},
 	{"quit", U_quit}, {"simulate", U_simulate},
-	{"d", U_display}, {"settings", U_settings}
+	{"d", U_display}, {"board", U_board}
+};
+
+
+enum ENGINES
+{
+	HUMAN_PLAYER, RANDOM_PLAYER, MIN_MAX_PLAYER, ALPHA_BETA_PLAYER
+};
+
+
+static map<ENGINES, int (*)(GAMESTATE* gs, int)> MAP_ENGINES = {
+	{HUMAN_PLAYER, human_player}
 };
 
 
@@ -82,6 +93,29 @@ void print_help() {
 	cout << "+---+--+--+--+--+--+--+---+\n" << endl;
 
 	return;
+}
+
+
+int parse_board(GAMESTATE* gs, vector<string> tokens) {
+	GAMESTATE gamestate;
+	static const int expected_board_size = (NUMBER_OF_TOTAL_HOLES);
+	if (tokens.size() != (2 + expected_board_size)) {
+		return false;
+	}
+	int current_number;
+	for (int current_index = 0; current_index < expected_board_size; ++current_index) {
+		gamestate.board[current_index] = stoi(tokens.at(current_index + 1));
+	}
+	const int current_player_index = stoi(tokens.back());
+	if ((current_player_index != PLAYER_A) and (current_player_index != PLAYER_B)) {
+		return false;
+	}
+	gamestate.current_player = current_player_index;
+	update_game_over(&gamestate);
+
+	memcpy(gs, &gamestate, sizeof(gamestate));
+	// ex: 4 4 4 4 4 4 0 4 4 4 4 4 4 0 0
+	return true;
 }
 
 
@@ -150,14 +184,21 @@ void console_loop() {
 			printf("Unknown command\n");
 			break;
 		}
-		case (U_settings):
-		{
-			//parse_settings(input);
-			break;
-		}
 		case (U_simulate):
 		{
-			//parse_simulate(input);
+			//parse_simulate(tokens);
+			break;
+		}
+		case (U_board):
+		{
+			try {
+				if (not parse_board(&gamestate, tokens)) {
+					cout << "Board could not be parsed!\n";
+				}	
+			}
+			catch (...) {
+				cout << "Invalid input!\n";
+			}
 			break;
 		}
 		}
@@ -170,6 +211,9 @@ exit_loop:
 int main() {
 	time_seed = time(NULL);
 	srand(time_seed);
+	//GAMESTATE gamestate;
+	//start_game(&gamestate);
+	//print_help();
 	console_loop();
 
 	//simulate_games(alpha_beta_player, random_player, 1'000, 14, 1);
@@ -177,10 +221,10 @@ int main() {
 	//int input;
 	//cin >> input;
 	//if (input == 1) {
-	//	game_loop(&gamestate, alpha_beta_player, human_player, true, 16, 1);
+	//	game_loop(&gamestate, alpha_beta_player, human_player, true, 12, 1);
 	//}
 	//else {
-	//	game_loop(&gamestate, human_player, alpha_beta_player, true, 16, 16);
+	//	game_loop(&gamestate, human_player, alpha_beta_player, true, 14, 16);
 	//}
 
 

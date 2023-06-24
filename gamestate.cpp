@@ -19,7 +19,11 @@ void print_board(GAMESTATE* gamestate) {
 	int current_hole_index;
 
 
-	cout << "+---+--+--+--+--+--+--+---+" << endl;
+	cout << "+---";
+	for (int space_index = 0; space_index < NUMBER_OF_HOUSES_PER_SIDE; ++space_index) {
+		cout << "+--";
+	}
+	cout << "+---+\n";
 
 	// Print player B side
 	cout << "|   ";
@@ -35,8 +39,12 @@ void print_board(GAMESTATE* gamestate) {
 	if (gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_B]] < 10) {
 		cout << ' ';
 	}
-	cout << gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_B]];
-	cout << " +--+--+--+--+--+--+ ";
+	cout << gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_B]] << ' ';
+	for (int space_index = 0; space_index < NUMBER_OF_HOUSES_PER_SIDE; ++space_index) {
+		cout << "+--";
+	}
+
+	cout << "+ ";
 	print_number(gamestate->board[PLAYER_TO_STORE_INDEX[PLAYER_A]]);
 	cout << "|" << endl;
 
@@ -49,7 +57,13 @@ void print_board(GAMESTATE* gamestate) {
 	}
 	cout << "|   |" << endl;
 
-	cout << "+---+--+--+--+--+--+--+---+\n" << endl;
+	cout << "+---";
+	for (int space_index = 0; space_index < NUMBER_OF_HOUSES_PER_SIDE; ++space_index) {
+		cout << "+--";
+	}
+
+	cout << "+---+\n\n";
+	cout << PLAYER_INDEX_TO_STRING[gamestate->current_player] << "'s turn.\n" << endl;
 
 	return;
 }
@@ -131,16 +145,22 @@ int sowing(GAMESTATE* gs, int hole_index, bool verify) {
 
 	int seed_count = gs->board[hole_index];
 	gs->board[hole_index] = 0;
+
+	bool first_cycle = true;
+	int opposite_player_index = (gs->current_player ^ 1);
 	while (seed_count > 0) {
 		++hole_index;
 
 		if (hole_index == NUMBER_OF_TOTAL_HOLES) {
 			hole_index = 0;
 		}
-		int opposite_player_index = (gs->current_player ^ 1);
+		if (hole_index == PLAYER_TO_STORE_INDEX[gs->current_player]) {
+			first_cycle = false;
+		}
 		if (hole_index == PLAYER_TO_STORE_INDEX[opposite_player_index]) {
 			continue;
 		}
+
 
 		++gs->board[hole_index];
 		--seed_count;
@@ -152,7 +172,14 @@ int sowing(GAMESTATE* gs, int hole_index, bool verify) {
 	}
 	else if (gs->board[hole_index] == 1) {
 		if (ALLOW_CAPTURES) {
-			return do_capture(gs, hole_index);
+			if (CAPTURE_ON_ONE_CYCLE) {
+				if (first_cycle) {
+					return do_capture(gs, hole_index);
+				}
+			}
+			else {
+				return do_capture(gs, hole_index);
+			}
 		}
 	}
 	else {

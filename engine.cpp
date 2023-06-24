@@ -47,7 +47,6 @@ find_loop:
 
 
 int human_player(GAMESTATE* gs, int) {
-	cout << "Player " << PLAYER_INDEX_TO_STRING[gs->current_player] << "'s turn.\n";
 input_loop:
 	cout << "Print the location of the hole to move: ";
 	int input = -1;
