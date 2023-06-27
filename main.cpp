@@ -20,7 +20,7 @@ enum COMMANDS
 {
 	U_unrecognized, U_help, U_newgame, U_stop,
 	U_perft, U_quit, U_simulate,
-	U_display, U_board
+	U_display, U_board, U_game
 };
 
 
@@ -28,7 +28,7 @@ static map<string, COMMANDS> MAP_COMMANDS =
 {
 	{"help", U_help}, {"newgame", U_newgame}, {"stop", U_stop}, {"perft", U_perft},
 	{"quit", U_quit}, {"simulate", U_simulate},
-	{"d", U_display}, {"board", U_board}
+	{"d", U_display}, {"board", U_board}, {"game", U_game}
 };
 
 
@@ -159,6 +159,45 @@ int parse_simulation(vector<string> tokens) {
 }
 
 
+int parse_game(GAMESTATE* gamestate, vector<string> tokens) {
+	int (*player_a)(GAMESTATE * gs, int);
+	int (*player_b)(GAMESTATE * gs, int);
+
+	if (MAP_ENGINES.find(stoi(tokens.at(1))) == MAP_ENGINES.end()) {
+		return 1;
+	}
+	else {
+		player_a = MAP_ENGINES[stoi(tokens.at(1))];
+	}
+	if (MAP_ENGINES.find(stoi(tokens.at(2))) == MAP_ENGINES.end()) {
+		return 1;
+	}
+	else {
+		player_b = MAP_ENGINES[stoi(tokens.at(2))];
+	}
+
+	int print_output = stoi(tokens.at(3));
+	int opt_a = 0;
+	int opt_b = 0;
+	if (tokens.size() > 4) {
+		opt_a = stoi(tokens.at(4));
+		if (tokens.size() == 6) {
+			opt_b = stoi(tokens.at(5));
+		}
+	}
+
+	try {
+		game_loop(gamestate, player_a, player_b, print_output, opt_a, opt_b);
+	}
+	catch (...) {
+		cout << "Game could not start!\n";
+		return 1;
+	}
+	// game 3 3 100 16 16
+	return false;
+}
+
+
 void console_loop() {
 
 	GAMESTATE gamestate;
@@ -236,6 +275,21 @@ void console_loop() {
 			}
 			break;
 		}
+		case (U_game):
+		{
+			try {
+				if (!game_started) {
+					start_game(&gamestate);
+				}
+				if (parse_game(&gamestate, tokens)) {
+					cout << "Invalid game commands.\n";
+				}
+			}
+			catch (...) {
+				cout << "Could not parse input.\n";
+			}
+			break;
+		}
 		case (U_board):
 		{
 			try {
@@ -260,18 +314,5 @@ int main() {
 	srand(time_seed);
 
 	console_loop();
-
-	//
-
-	//int input;
-	//cin >> input;
-	//if (input == 1) {
-	//	game_loop(&gamestate, alpha_beta_player, human_player, true, 12, 1);
-	//}
-	//else {
-	//	game_loop(&gamestate, human_player, alpha_beta_player, true, 14, 16);
-	//}
-
-
 	return 0;
 }

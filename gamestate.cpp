@@ -69,8 +69,6 @@ void print_board(GAMESTATE* gamestate) {
 }
 
 
-
-
 void start_game(GAMESTATE* gs) {
 	int current_hole_index;
 
@@ -284,7 +282,8 @@ bool update_game_over(GAMESTATE* gamestate) {
 }
 
 
-int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*player_b)( GAMESTATE* gs, int), bool print_output, int opt_A, int opt_B) {
+int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*player_b)( GAMESTATE* gs, int), bool print_output, int opt_A, int opt_B)
+ {
 	while (gamestate->game_result == -1) {
 		if (print_output) {
 			print_board(gamestate);
@@ -335,3 +334,4 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*
 
 	return true;
 }
+
