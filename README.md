@@ -12,6 +12,7 @@ make release
 ## Strength
 The Alpha Beta engine can outperform most human opponents.
 Results for Perft-test of depth 10:
+
 <img width="310" alt="image" src="https://github.com/lunathanael/Mancala-console/assets/68858103/6d0c9bc2-470e-48dd-a7ef-cca4ec5981ac">
 
 ## Usage
@@ -39,7 +40,9 @@ game eng1 eng2 print_output opt1 opt2
 game 3 3 1 16 16
 ```
 Engine indexes:
+
 <img width="431" alt="image" src="https://github.com/lunathanael/Mancala-console/assets/68858103/824e944f-e9e5-4fa2-98db-604fad90c6ce">
+
 simulate - simulates a number of games with given parameters
 ``` bash
 simulate eng1 eng2 number_of_games opt1 opt2
@@ -51,6 +54,7 @@ board 4 4 4 4 4 4 0 4 4 4 4 4 4 0 0
 ```
 ## Options
 The rules for the game are defined in the defs.h header file, most settings can be changed without issue.
+
 <img width="491" alt="image" src="https://github.com/lunathanael/Mancala-console/assets/68858103/c96d6d7d-07e5-42b2-8b5f-eab45bebc311">
 
 ## Contributing
