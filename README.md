@@ -1,9 +1,9 @@
 # Mancala-console
 
-The board game of Mancala is implemented in a command line interface. Supports human interface, min-max algorithm, and alpha beta pruning.
+The board game of Mancala is implemented in a command line interface. Supports human interface, min-max algorithm, and alpha-beta pruning.
 
 ## Compiling
-The project was developed using C++11 and compiled using Make. Compile using commands below:
+The project was developed using C++11 and compiled using Make. Compile using the commands below:
 ```bash
 make
 make release
@@ -52,6 +52,8 @@ board - parses a board string
 ```bash
 board 4 4 4 4 4 4 0 4 4 4 4 4 4 0 0
 ```
+
+For human moves, input the index number of the hole selected. For help on indexing, reference the `help` command.
 ## Options
 The rules for the game are defined in the defs.h header file, most settings can be changed without issue.
 
