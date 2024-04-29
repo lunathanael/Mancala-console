@@ -324,7 +324,7 @@ int game_loop(GAMESTATE* gamestate, int (*player_a)( GAMESTATE* gs, int), int (*
 		switch (gamestate->game_result) {
 		case PLAYER_A:
 		case PLAYER_B:
-			cout << "Game won by: " << PLAYER_INDEX_TO_STRING[gamestate->game_result];
+			cout << "Game won by: " << PLAYER_INDEX_TO_STRING[gamestate->game_result] << '\n';
 			break;
 		case NO_PLAYER:
 			cout << "Game was a tie!\n";
