@@ -2,7 +2,7 @@ SRCS=$(wildcard *.cpp)
 NAME=Mancala
 
 all :
-	g++ -Og $(SRCS) -o $(NAME)
+	g++ -std=c++17 -Og $(SRCS) -o $(NAME)
 release :
-	g++ -Ofast $(SRCS) -static -o $(NAME)
+	g++ -std=c++17 -Ofast $(SRCS) -static -o $(NAME)
 
