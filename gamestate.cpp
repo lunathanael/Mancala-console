@@ -99,7 +99,7 @@ bool is_valid_move(GAMESTATE* gamestate, int hole_index) {
 	else {
 		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
 	}
-	if (hole_index < starter or hole_index > (starter + 5)) {
+	if (hole_index < starter || hole_index > (starter + 5)) {
 		return false;
 	}
 
@@ -117,7 +117,7 @@ int do_capture(GAMESTATE* gs, int hole_index) {
 	}
 	int opposite_hole_index = ((2 * PLAYER_TO_STORE_INDEX[PLAYER_A]) - hole_index);
 	int seed_count = gs->board[opposite_hole_index];
-	if (CAPTURE_BOTH and (seed_count != 0) ) {
+	if (CAPTURE_BOTH && (seed_count != 0) ) {
 		++seed_count;
 		--gs->board[hole_index];
 	}
@@ -139,7 +139,7 @@ void undo_capture(GAMESTATE* gs, int hole_index, int seed_count) {
 
 int sowing(GAMESTATE* gs, int hole_index, bool verify) {
 	if (verify) {
-		if (not is_valid_move(gs, hole_index)) {
+		if (!is_valid_move(gs, hole_index)) {
 			throw(505);
 		}
 	}
