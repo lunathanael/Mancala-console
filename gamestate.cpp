@@ -84,6 +84,9 @@ void start_game(GAMESTATE* gs) {
 
 	fill_n(&gs->board[current_hole_index], NUMBER_OF_HOUSES_PER_SIDE, STARTING_SEEDS_PER_HOUSE);
 
+	gs->board[PLAYER_TO_STORE_INDEX[PLAYER_A]] = gs->board[PLAYER_TO_STORE_INDEX[PLAYER_B]] = 0;
+	gs->game_result = -1;
+
 	return;
 }
 
