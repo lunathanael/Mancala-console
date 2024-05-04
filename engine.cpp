@@ -16,7 +16,7 @@ bool validate_move(GAMESTATE* gamestate, int hole_index) {
 	else {
 		starter = PLAYER_TO_STORE_INDEX[PLAYER_A] + 1;
 	}
-	if (hole_index < starter or hole_index >(starter + 5)) {
+	if ((hole_index < starter) || (hole_index >(starter + 5))) {
 		return false;
 	}
 
@@ -39,7 +39,7 @@ int random_player(GAMESTATE* gs, int) {
 
 find_loop:
 	hole_index = (rand() % (ub - lb + 1)) + lb;
-	if (not validate_move(gs, hole_index)) {
+	if (!validate_move(gs, hole_index)) {
 		goto find_loop;
 	}
 	return hole_index;
