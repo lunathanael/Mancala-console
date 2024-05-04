@@ -108,7 +108,7 @@ int parse_board(GAMESTATE* gs, vector<string> tokens) {
 		gamestate.board[current_index] = stoi(tokens.at(current_index + 1));
 	}
 	const int current_player_index = stoi(tokens.back());
-	if ((current_player_index != PLAYER_A) and (current_player_index != PLAYER_B)) {
+	if ((current_player_index != PLAYER_A) && (current_player_index != PLAYER_B)) {
 		return true;
 	}
 	gamestate.current_player = current_player_index;
