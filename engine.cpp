@@ -1,9 +1,9 @@
-#include "engine.h"
+#include "engine.hpp"
 #include <random>
 #include <iostream>
 #include <algorithm>
 
-#include "gamestate.h"
+#include "gamestate.hpp"
 
 using namespace std;
 

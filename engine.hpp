@@ -1,7 +1,7 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef ENGINE_HPP
+#define ENGINE_HPP
 
-#include "defs.h"
+#include "defs.hpp"
 
 int human_player( GAMESTATE* gs, int);
 int random_player( GAMESTATE* gs, int);

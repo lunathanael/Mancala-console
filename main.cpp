@@ -7,10 +7,10 @@
 #include <io.h>
 #include <map>
 
-#include "defs.h"
-#include "gamestate.h"
-#include "engine.h"
-#include "perft.h"
+#include "defs.hpp"
+#include "gamestate.hpp"
+#include "engine.hpp"
+#include "perft.hpp"
 
 using namespace std;
 

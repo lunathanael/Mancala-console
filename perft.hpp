@@ -1,13 +1,13 @@
-#ifndef PERFT_H
-#define PERFT_H
+#ifndef PERFT_HPP
+#define PERFT_HPP
 
 #include <time.h>
 #include <Windows.h>
 #include <iostream>
 
-#include "defs.h"
-#include "gamestate.h"
-#include "engine.h"
+#include "defs.hpp"
+#include "gamestate.hpp"
+#include "engine.hpp"
 
 	
 void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTATE* gs, int), int trials, int opt_A, int opt_B) {

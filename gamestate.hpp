@@ -1,8 +1,8 @@
-#ifndef GAMESTATE_H
-#define GAMESTATE_H
+#ifndef GAMESTATE_HPP
+#define GAMESTATE_HPP
 
 #include <iostream>
-#include "defs.h"
+#include "defs.hpp"
 
 
 void start_game(GAMESTATE* gs);
