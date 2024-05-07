@@ -19,7 +19,7 @@ using namespace std;
 enum COMMANDS
 {
 	U_unrecognized, U_help, U_newgame, U_stop,
-	U_perft, U_quit, U_simulate,
+	U_perft, U_quit, U_simulate, U_search,
 	U_display, U_board, U_game
 };
 
@@ -27,21 +27,23 @@ enum COMMANDS
 static map<string, COMMANDS> MAP_COMMANDS =
 {
 	{"help", U_help}, {"newgame", U_newgame}, {"stop", U_stop}, {"perft", U_perft},
-	{"quit", U_quit}, {"simulate", U_simulate},
+	{"quit", U_quit}, {"simulate", U_simulate}, {"search", U_search},
 	{"d", U_display}, {"board", U_board}, {"game", U_game}
 };
 
 
 enum ENGINES
 {
-	HUMAN_PLAYER = 0, RANDOM_PLAYER = 1, MIN_MAX_PLAYER = 2, ALPHA_BETA_PLAYER = 3, SIMPLE_THREADED_ALPHA_BETA_PLAYER = 4
+	HUMAN_PLAYER = 0, RANDOM_PLAYER = 1, MIN_MAX_PLAYER = 2, ALPHA_BETA_PLAYER = 3, SIMPLE_THREADED_ALPHA_BETA_PLAYER = 4,
+	HEURISTIC_ALPHA_BETA_PLAYER = 5,
 };
 
 
 static map<int, int (*)(GAMESTATE* gs, int)> MAP_ENGINES = {
 	{HUMAN_PLAYER, human_player}, {RANDOM_PLAYER, random_player},
 	{MIN_MAX_PLAYER, min_max_player}, {ALPHA_BETA_PLAYER, alpha_beta_player},
-	{SIMPLE_THREADED_ALPHA_BETA_PLAYER, simple_threaded_alpha_beta_player}
+	{SIMPLE_THREADED_ALPHA_BETA_PLAYER, simple_threaded_alpha_beta_player},
+	{HEURISTIC_ALPHA_BETA_PLAYER, heuristic_alpha_beta_player}
 };
 
 
@@ -199,6 +201,39 @@ int parse_game(GAMESTATE* gamestate, vector<string> tokens) {
 }
 
 
+int parse_search(GAMESTATE* gamestate, vector<string> tokens) {
+	int (*engine)(GAMESTATE * gs, int);
+
+	if (MAP_ENGINES.find(stoi(tokens.at(1))) == MAP_ENGINES.end()) {
+		return 1;
+	}
+	else {
+		engine = MAP_ENGINES[stoi(tokens.at(1))];
+	}
+
+	if (engine == human_player)
+	{
+		return 1;
+	}
+
+	int opt = 1;
+	if (tokens.size() > 2) {
+		opt = stoi(tokens.at(2));
+	}
+
+	int hole_selected = -1;
+	try {
+		hole_selected = engine(gamestate, opt);
+	}
+	catch (...) {
+		cout << "Engine could not be started!\n";
+		return 1;
+	}
+	// search 3 16
+	return false;
+}
+
+
 void console_loop() {
 
 	GAMESTATE gamestate;
@@ -225,6 +260,7 @@ void console_loop() {
 
 		switch (MAP_COMMANDS[tokens[0]])
 		{
+		case (U_stop):
 		case (U_quit):
 		{
 			goto exit_loop;
@@ -281,9 +317,26 @@ void console_loop() {
 			try {
 				if (!game_started) {
 					start_game(&gamestate);
+					game_started = true;
 				}
 				if (parse_game(&gamestate, tokens)) {
 					cout << "Invalid game commands.\n";
+				}
+			}
+			catch (...) {
+				cout << "Could not parse input.\n";
+			}
+			break;
+		}
+		case (U_search):
+		{
+			try {
+				if (!game_started) {
+					start_game(&gamestate);
+					game_started = true;
+				}
+				if (parse_search(&gamestate, tokens)) {
+					cout << "Invalid search commands.\n";
 				}
 			}
 			catch (...) {
@@ -296,7 +349,11 @@ void console_loop() {
 			try {
 				if (parse_board(&gamestate, tokens)) {
 					cout << "Board could not be parsed!\n";
-				}	
+				}
+				else
+				{
+					game_started = true;
+				}
 			}
 			catch (...) {
 				cout << "Invalid input!\n";

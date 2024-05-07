@@ -59,7 +59,7 @@ void simulate_games(int (*player_a)(GAMESTATE* gs, int), int (*player_b)(GAMESTA
 }
 
 
-void perft_driver(GAMESTATE* gs, int depth, int* p_nodes)
+void perft_driver(GAMESTATE* gs, int depth, long long int* p_nodes)
 {
 	if (depth == 0)
 	{
@@ -90,7 +90,7 @@ void perft_driver(GAMESTATE* gs, int depth, int* p_nodes)
 
 
 void perft_test(GAMESTATE* gs, int depth) {
-	int p_nodes = 0;
+	long long int p_nodes = 0;
 	printf("\n     Performance test\n\n");
 	printf("\n     Move:    Nodes:\n");
 	int range_hole[6];
@@ -102,7 +102,7 @@ void perft_test(GAMESTATE* gs, int depth) {
 
 		std::copy(B_HOLE_RANGE, B_HOLE_RANGE + 6, range_hole);
 	}
-	long start = GetTickCount();
+	long long int start = GetTickCount();
 
 	for (int index = 0; index < 6; ++index) {
 		int hole_index = range_hole[index];
@@ -114,21 +114,21 @@ void perft_test(GAMESTATE* gs, int depth) {
 		sowing(&gamestate, hole_index, false);
 		perft_driver(&gamestate, depth - 1, &p_nodes);
 
-		long long old_nodes = p_nodes - cummulative_nodes;
+		long long int old_nodes = p_nodes - cummulative_nodes;
 		std::string move_string = HOLE_INDEX_TO_STRING[hole_index];
 		std::cout << "     " << move_string << "       " << old_nodes << "\n";
 		//printf("     %s    %lld\n", (move_string), old_nodes);
 	}
 
-	long time = GetTickCount() - start;
+	long long int time = GetTickCount() - start;
 	// print results
 	printf("\n    Depth: %d ply\n", depth);
 	printf("    Nodes: %lld\n", p_nodes);
-	printf("     Time: %ld ms\n", time);
+	printf("     Time: %lld ms\n", time);
 	if (time <= 0) {
 		time = 1;
 	}
-	printf("      Nps: %dMN/s\n\n", ((p_nodes / time) / 1000));
+	printf("      Nps: %lldMN/s\n\n", ((p_nodes / time) / 1000));
 }
 
 #endif
