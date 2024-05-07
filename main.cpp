@@ -224,6 +224,7 @@ int parse_search(GAMESTATE* gamestate, vector<string> tokens) {
 	int hole_selected = -1;
 	try {
 		hole_selected = engine(gamestate, opt);
+		cout << hole_selected << '\n';
 	}
 	catch (...) {
 		cout << "Engine could not be started!\n";
