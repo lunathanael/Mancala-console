@@ -35,7 +35,7 @@ static map<string, COMMANDS> MAP_COMMANDS =
 enum ENGINES
 {
 	HUMAN_PLAYER = 0, RANDOM_PLAYER = 1, MIN_MAX_PLAYER = 2, ALPHA_BETA_PLAYER = 3, SIMPLE_THREADED_ALPHA_BETA_PLAYER = 4,
-	HEURISTIC_ALPHA_BETA_PLAYER = 5,
+	HEURISTIC_ALPHA_BETA_PLAYER = 5, BETA_ALPHA_PLAYER = 6,
 };
 
 
@@ -43,7 +43,8 @@ static map<int, int (*)(GAMESTATE* gs, int)> MAP_ENGINES = {
 	{HUMAN_PLAYER, human_player}, {RANDOM_PLAYER, random_player},
 	{MIN_MAX_PLAYER, min_max_player}, {ALPHA_BETA_PLAYER, alpha_beta_player},
 	{SIMPLE_THREADED_ALPHA_BETA_PLAYER, simple_threaded_alpha_beta_player},
-	{HEURISTIC_ALPHA_BETA_PLAYER, heuristic_alpha_beta_player}
+	{HEURISTIC_ALPHA_BETA_PLAYER, heuristic_alpha_beta_player},
+	{BETA_ALPHA_PLAYER, beta_alpha_player}
 };
 
 

@@ -10,6 +10,7 @@ int min_max_player(GAMESTATE* gs, int depth);
 int alpha_beta_player(GAMESTATE* given_gs, int depth);
 int simple_threaded_alpha_beta_player(GAMESTATE* gs, int depth);
 int heuristic_alpha_beta_player(GAMESTATE* gs, int depth);
+int beta_alpha_player(GAMESTATE* given_gs, int depth);
 
 
 
